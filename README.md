@@ -1,5 +1,11 @@
-# joshuarli's ydiff fork
+# caksoylar's fork of joshuarli's ydiff fork
 
+This fork reverts display back to the traditional diff from side-by-side, then
+also changes highlighting from the original repo so that whole line changes are
+not highlighted as changes. Also code is simplified a bit more and linting issues
+resolved.
+
+## joshuarli's ydiff fork
 This is [ydiff](https://github.com/ymattw/ydiff), distilled down to the very core.
 
 It's been heavily modified and stripped down to a very specific feature subset:
