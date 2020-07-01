@@ -8,20 +8,12 @@ signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 
 COLOR_RESET = '\x1b[0m'
-COLOR_UNDERLINE = '\x1b[4m'
 COLOR_REVERSE = '\x1b[7m'
 COLOR_RED = '\x1b[31m'
 COLOR_GREEN = '\x1b[32m'
 COLOR_YELLOW = '\x1b[33m'
 COLOR_BLUE = '\x1b[34m'
-COLOR_MAGENTA = '\x1b[35m'
 COLOR_CYAN = '\x1b[36m'
-COLOR_LIGHTRED = '\x1b[1;31m'
-COLOR_LIGHTGREEN = '\x1b[1;32m'
-COLOR_LIGHTYELLOW = '\x1b[1;33m'
-COLOR_LIGHTBLUE = '\x1b[1;34m'
-COLOR_LIGHTMAGENTA = '\x1b[1;35m'
-COLOR_LIGHTCYAN = '\x1b[1;36m'
 
 
 def strsplit(text, width):
@@ -281,26 +273,27 @@ def markup_traditional(diff):
         return f"{COLOR_YELLOW}{line}{COLOR_RESET}"
 
     def _markup_hunk_header(line):
-        return f"{COLOR_LIGHTCYAN}{line}{COLOR_RESET}"
+        return f"{COLOR_CYAN}{line}{COLOR_RESET}"
 
     def _markup_hunk_meta(line):
-        return f"{COLOR_LIGHTBLUE}{line}{COLOR_RESET}"
+        return f"{COLOR_BLUE}{line}{COLOR_RESET}"
 
     def _markup_old(line):
-        return f"{COLOR_LIGHTRED}{line}{COLOR_RESET}"
+        return f"{COLOR_RED}{line}{COLOR_RESET}"
 
     def _markup_new(line):
         return f"{COLOR_GREEN}{line}{COLOR_RESET}"
 
     def _markup_mix(line, base_color):
-        del_code = COLOR_REVERSE + base_color
-        add_code = COLOR_REVERSE + base_color
-        chg_code = COLOR_UNDERLINE + base_color
-        rst_code = COLOR_RESET + base_color
-        line = line.replace('\x00-', del_code)
-        line = line.replace('\x00+', add_code)
-        line = line.replace('\x00^', chg_code)
-        line = line.replace('\x01', rst_code)
+        # check if a whole line change, if so, treat same as old/new
+        if line.startswith('\x00') and line.endswith('\x01') and '\x00' not in line[1:-1]:
+            line = line.replace('\x00-', base_color)
+            line = line.replace('\x00+', base_color)
+        else:
+            line = line.replace('\x00-', f"{COLOR_REVERSE}{base_color}")
+            line = line.replace('\x00+', f"{COLOR_REVERSE}{base_color}")
+        line = line.replace('\x00^', f"{COLOR_REVERSE}{base_color}")
+        line = line.replace('\x01', f"{COLOR_RESET}{base_color}")
         return f"{base_color}{line}{COLOR_RESET}"
 
     for line in diff.headers:
@@ -327,12 +320,10 @@ def markup_traditional(diff):
                     yield _markup_old(line)
                 else:
                     # DEBUG: yield 'CHG: %s %s\n' % (old, new)
-                    yield (_markup_old('-') +
-                           _markup_mix(old[1], COLOR_RED))
-                    yield (_markup_new('+') +
-                           _markup_mix(new[1], COLOR_GREEN))
+                    yield f"{_markup_old('-')}{_markup_mix(old[1], COLOR_RED)}"
+                    yield f"{_markup_new('+')}{_markup_mix(new[1], COLOR_GREEN)}"
             else:
-                yield ' ' + old[1]
+                yield f" {old[1]}"
 
 
 def main():
