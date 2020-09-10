@@ -119,10 +119,10 @@ class Hunk:
 
 class UnifiedDiff:
     def __init__(self, headers=None, old_path=None, new_path=None, hunks=None):
-        self.headers = headers if headers else []
-        self.old_path = old_path
-        self.new_path = new_path
-        self.hunks = hunks if hunks else []
+        self.headers = headers or None
+        self.old_path = old_path or None
+        self.new_path = new_path or None
+        self.hunks = hunks or []
 
     @staticmethod
     def is_old_path(line):
@@ -299,8 +299,9 @@ def markup_traditional(diff):
     for line in diff.headers:
         yield _markup_header(line)
 
-    yield _markup_path(diff.old_path)
-    yield _markup_path(diff.new_path)
+    if diff.old_path is not None and diff.new_path is not None:
+        yield _markup_path(diff.old_path)
+        yield _markup_path(diff.new_path)
 
     for hunk in diff.hunks:
         for hunk_header in hunk.hunk_headers:
